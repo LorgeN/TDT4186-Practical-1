@@ -1,6 +1,9 @@
 #include "alarms.h"
 #include <signal.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 unsigned int alarm_count = 0;
 alarm_t alarms[MAX_ALARMS];
@@ -15,12 +18,35 @@ unsigned int get_alarm_count()
     return alarm_count;
 }
 
+unsigned int _fork_alarm(time_t timestamp)
+{
+    unsigned int pid = fork();
+
+    if (pid != 0)
+    {
+        printf("Is default \n");
+        return pid;
+    }
+    else
+    {
+        printf("Is child of Lorgen \n");
+        exit(0);
+        return 0;
+    }
+}
+
 unsigned int schedule_alarm(time_t timestamp)
 {
     alarm_t new_alarm;
     new_alarm.timestamp = timestamp;
 
     // TODO: Schedule alarm and set PID
+
+    unsigned int pid = _fork_alarm(timestamp);
+
+    printf("Expected pid %d", pid);
+
+    new_alarm.pid = pid;
 
     unsigned int alarm_id = alarm_count;
     alarms[alarm_id] = new_alarm;
