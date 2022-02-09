@@ -7,4 +7,4 @@ Contains solution for assignment made by group 80
 Simply run `make` to build the project. The compiled program will be located at `./build/alarmclock`. You can run it using `./build/alarmclock`. You may also use `make clean` to clean any generated build files.
 
 # Checklist before delivere
--[ ] All files prefixed with ```TMP_```should be remove from repo
+- [ ] All files prefixed with ```TMP_```should be remove from repo
