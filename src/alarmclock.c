@@ -12,8 +12,11 @@ int main(int argc, char const *argv[])
     timeinfo = localtime(&rawtime);
     printf("Current local time and date: %s\n", asctime(timeinfo));
 
-    unsigned int id = schedule_alarm(rawtime);
+    unsigned int id = schedule_alarm(rawtime + 10);
     printf("%d \n", id);
+    while (1)
+    {
+    }
 
     return 0;
 }

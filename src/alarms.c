@@ -18,19 +18,50 @@ unsigned int get_alarm_count()
     return alarm_count;
 }
 
+time_t get_current_time()
+{
+    time_t rawtime;
+    struct tm *timeinfo;
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    return rawtime;
+}
+
+void _ring_alarm()
+{
+    printf("Alarm ended\n");
+}
+
 unsigned int _fork_alarm(time_t timestamp)
 {
     unsigned int pid = fork();
 
     if (pid != 0)
-    {
-        printf("Is default \n");
+    { // if its the parent main proccess
         return pid;
     }
+    else
+    { // If its a child process
 
-    printf("Is child of Lorgen \n");
-    exit(0);
-    return 0;
+        time_t current_time = get_current_time();
+
+        int seconds_to_wait = (int)difftime(timestamp, current_time);
+
+        if (seconds_to_wait < 0)
+        {
+            printf("Error: Seconds to wait is negative");
+            // TODO Martinsen: Error handling: you fucked up bro
+            exit(1);
+        }
+        else
+        {
+            sleep(seconds_to_wait);
+            _ring_alarm();
+            exit(0);
+        }
+    }
 }
 
 unsigned int schedule_alarm(time_t timestamp)
