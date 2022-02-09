@@ -31,7 +31,15 @@ time_t get_current_time()
 
 void _ring_alarm()
 {
-    printf("Alarm ended\n");
+    printf("RING! Alarm ended!\n");
+#ifdef _WIN32
+    // We don't do much to support Windows
+    printf("You use Windows so you don't get any cool sounds :'(")
+#elif __APPLE__
+    // TODO: Play some sound
+#elif __unix__
+    execlp("mpg123", "mpg123", "-q", "./alarm.mp3", 0);
+#endif
 }
 
 unsigned int _fork_alarm(time_t timestamp)
