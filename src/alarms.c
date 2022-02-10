@@ -18,36 +18,72 @@ unsigned int get_alarm_count()
     return alarm_count;
 }
 
+time_t get_current_time()
+{
+    time_t rawtime;
+    struct tm *timeinfo;
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    return rawtime;
+}
+
+void _ring_alarm()
+{
+    printf("RING! Alarm ended!\n");
+#ifdef _WIN32
+    // We don't do much to support Windows
+    printf("You use Windows so you don't get any cool sounds :'(")
+#elif __APPLE__
+    // TODO: Play some sound
+#elif __unix__
+    execlp("mpg123", "mpg123", "-q", "./alarm.mp3", 0);
+#endif
+}
+
 unsigned int _fork_alarm(time_t timestamp)
 {
     unsigned int pid = fork();
 
     if (pid != 0)
-    {
-        printf("Is default \n");
+    { // if its the parent main proccess
         return pid;
     }
     else
-    {
-        printf("Is child of Lorgen \n");
-        exit(0);
-        return 0;
+    { // If its a child process
+
+        time_t current_time = get_current_time();
+
+        int seconds_to_wait = (int)difftime(timestamp, current_time);
+
+        if (seconds_to_wait < 0)
+        {
+            printf("Error: Seconds to wait is negative");
+            // TODO Martinsen: Error handling: you fucked up bro
+            exit(1);
+        }
+        else
+        {
+            sleep(seconds_to_wait);
+            _ring_alarm();
+            exit(0);
+        }
     }
 }
 
 unsigned int schedule_alarm(time_t timestamp)
 {
-    alarm_t new_alarm;
-    new_alarm.timestamp = timestamp;
-
-    // TODO: Schedule alarm and set PID
-
+    // Avoid modifying array before everything is set up
     unsigned int pid = _fork_alarm(timestamp);
 
-    printf("Expected pid %d", pid);
-
+    alarm_t new_alarm;
+    new_alarm.timestamp = timestamp;
     new_alarm.pid = pid;
 
+    // Alarm count is the total amount of alarms we have so naturally
+    // if we use alarm count as id (and index) it will be added after
+    // the last current alarm in the array
     unsigned int alarm_id = alarm_count;
     alarms[alarm_id] = new_alarm;
     alarm_count += 1;
@@ -62,6 +98,6 @@ void cancel_alarm(unsigned int id)
 
     alarm_t *dest = alarms + id;
     memmove(dest, dest + 1, sizeof(alarm_t) * (alarm_count - id - 1));
-    memset(&alarms + alarm_count - 1, 0, sizeof(alarm_t));
+    memset(alarms + alarm_count - 1, 0, sizeof(alarm_t));
     alarm_count -= 1;
 }

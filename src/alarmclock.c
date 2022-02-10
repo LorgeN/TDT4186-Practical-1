@@ -23,8 +23,11 @@ int main(int argc, char const *argv[])
     printf("Please enter \"x\" for exit the program\n");
     scanf("%s", &choice);
 
-    unsigned int id = schedule_alarm(rawtime);
+    unsigned int id = schedule_alarm(rawtime + 10);
     printf("%d \n", id);
+    while (1)
+    {
+    }
 
     return 0;
 }
