@@ -15,6 +15,9 @@ typedef struct alarm_t
 // Get the alarm with the specified id
 alarm_t get_alarm(unsigned int id);
 
+// Get the local current time
+time_t get_current_time();
+
 // Gets the amount of currently scheduled alarms
 unsigned int get_alarm_count();
 
