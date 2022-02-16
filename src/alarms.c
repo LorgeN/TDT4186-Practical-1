@@ -4,9 +4,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 unsigned int alarm_count = 0;
 alarm_t alarms[MAX_ALARMS];
+
+void __clean_up_alarm(unsigned int id)
+{
+    alarm_t *dest = alarms + id;
+    memmove(dest, dest + 1, sizeof(alarm_t) * (alarm_count - id - 1));
+    memset(alarms + alarm_count - 1, 0, sizeof(alarm_t));
+    alarm_count -= 1;
+}
 
 alarm_t get_alarm(unsigned int id)
 {
@@ -21,11 +30,7 @@ unsigned int get_alarm_count()
 time_t get_current_time()
 {
     time_t rawtime;
-    struct tm *timeinfo;
-
     time(&rawtime);
-    timeinfo = localtime(&rawtime);
-
     return rawtime;
 }
 
@@ -59,15 +64,13 @@ unsigned int _fork_alarm(time_t timestamp)
 
         if (seconds_to_wait < 0)
         {
-            printf("Error: Seconds to wait is negative");
-            // TODO Martinsen: Error handling: you fucked up bro
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         else
         {
             sleep(seconds_to_wait);
             _ring_alarm();
-            exit(0);
+            exit(EXIT_SUCCESS);
         }
     }
 }
@@ -91,13 +94,47 @@ unsigned int schedule_alarm(time_t timestamp)
     return alarm_id;
 }
 
+void catch_zombies()
+{
+    pid_t pid = waitpid(-1, NULL, WNOHANG);
+
+    // If no child has terminated (pid_t) 0 is returned
+    if (pid == (pid_t)0)
+    {
+        return;
+    }
+
+    unsigned int id = -1;
+    for (int i = 0; i < get_alarm_count(); i++)
+    {
+        if ((pid_t)get_alarm(i).pid == pid)
+        {
+            id = i;
+            break;
+        }
+    }
+
+    if (id == -1)
+    {
+        return;
+    }
+
+    __clean_up_alarm(id);
+}
+
 void cancel_alarm(unsigned int id)
 {
     alarm_t alarm = get_alarm(id);
     kill(alarm.pid, SIGKILL);
+    __clean_up_alarm(id);
+}
 
-    alarm_t *dest = alarms + id;
-    memmove(dest, dest + 1, sizeof(alarm_t) * (alarm_count - id - 1));
-    memset(alarms + alarm_count - 1, 0, sizeof(alarm_t));
-    alarm_count -= 1;
+void shut_down()
+{
+    alarm_t current;
+    for (int i = 0; i < get_alarm_count(); i++)
+    {
+        current = get_alarm(i);
+        kill(current.pid, SIGKILL);
+    }
 }

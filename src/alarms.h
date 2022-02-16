@@ -15,7 +15,7 @@ typedef struct alarm_t
 // Get the alarm with the specified id
 alarm_t get_alarm(unsigned int id);
 
-// Get the local current time
+// Get current system time
 time_t get_current_time();
 
 // Gets the amount of currently scheduled alarms
@@ -26,5 +26,11 @@ unsigned int schedule_alarm(time_t timestamp);
 
 // Cancels the alarm with the given ID
 void cancel_alarm(unsigned int id);
+
+// Shuts down all pending alarm tasks
+void shut_down();
+
+// Catches zombie processes and cleans up executed alarms
+void catch_zombies(); 
 
 #endif
