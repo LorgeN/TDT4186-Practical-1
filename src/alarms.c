@@ -41,7 +41,7 @@ void _ring_alarm()
     // We don't do much to support Windows
     printf("You use Windows so you don't get any cool sounds :'(")
 #elif __APPLE__
-    // TODO: Play some sound
+    execlp("afplay", "afplay", "./alarm.mp3", 0);
 #elif __unix__
     execlp("mpg123", "mpg123", "-q", "./alarm.mp3", 0);
 #endif
